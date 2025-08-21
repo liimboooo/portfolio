@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Portfolio — Your Name</title>
+  <meta name="description" content="Portfolio of Your Name. A designer and developer for the digital future." />
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0d1117">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Major+Mono+Display&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ===== CSS RESET (trimmed) ===== */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    body,h1,h2,h3,h4,p,ul,ol,figure{margin:0}
+    img{max-width:100%;display:block;height:auto}
+    ul[role='list'],ol[role='list']{list-style:none;padding:0}
+    a{text-decoration:none;color:inherit}
+
+    /* ===== THEME (Glitch/Cyberpunk Palette) ===== */
+    :root{
+      --bg:#0d1117; --bg-elev:#161b22; --text:#e6edf3; --muted:#8b949e;
+      --neon-green:#39ff14; --neon-pink:#ff1493; --neon-blue:#00ffff;
+      --matrix:var(--neon-blue); /* used by background rain */
+      --dash:var(--neon-blue); --dash-size:20px; --dash-thickness:2px;
+    }
+    body.root{ --bg:#000; --bg-elev:#050505; --matrix: var(--neon-pink); --dash: var(--neon-pink); }
+
+    /* ===== BASE ===== */
+    body{ font-family:'Space Mono',monospace; background:var(--bg); color:var(--text); line-height:1.6; overflow-x:hidden; position:relative }
+
+    /* ======= HACKER BACKGROUND (Matrix + Scanlines + Vignette) ======= */
+    #matrixBg{position:fixed; inset:0; z-index:-3; opacity:.22; pointer-events:none}
+    /* CRT scanlines */
+    body::before{content:""; position:fixed; inset:0; pointer-events:none; z-index:-2; background:repeating-linear-gradient(to bottom, rgba(255,255,255,.045) 0 1px, transparent 1px 3px); opacity:.18}
+    /* Vignette */
+    body::after{content:""; position:fixed; inset:0; pointer-events:none; z-index:-1; box-shadow:inset 0 0 120px rgba(0,0,0,.55)}
+    /* Dashed grid overlay (toggleable) */
+    #dashGrid{position:fixed; inset:0; z-index:-2; pointer-events:none; opacity:0; transition:opacity .3s; background:
+      repeating-linear-gradient(to right, rgba(0,255,255,.08) 0 2px, transparent 2px 24px),
+      repeating-linear-gradient(to bottom, rgba(0,255,255,.06) 0 2px, transparent 2px 24px);
+      mix-blend-mode:overlay;}
+    #dashGrid.on{opacity:.25}
+
+    /* FX layers */
+    #cursorFx{position:fixed; inset:0; z-index:120; pointer-events:none; opacity:.85}
+    #sweepFx{position:fixed; left:0; right:0; top:-20vh; height:18vh; z-index:60; pointer-events:none; opacity:.65; mix-blend-mode:screen; background: linear-gradient(180deg, transparent, rgba(0,255,255,.15), transparent)}
+    .sweep-run{animation: sweepDown 1.1s ease-out}
+    @keyframes sweepDown{from{transform:translateY(-120%)} to{transform:translateY(120vh)}}
+
+    .container{width:min(1100px,92%); margin-inline:auto}
+    .grid{display:grid; gap:1.5rem}
+
+    .btn{ display:inline-flex; align-items:center; gap:.6rem; padding:.8rem 1.2rem; background:transparent;
+      border:2px dashed var(--neon-green); color:var(--neon-green);
+      text-shadow:0 0 5px var(--neon-green),0 0 10px var(--neon-green);
+      box-shadow:0 0 5px var(--neon-green),inset 0 0 5px var(--neon-green);
+      transition:transform .25s ease, box-shadow .3s ease, background .3s ease, color .3s ease;
+      font-weight:700; position:relative; overflow:hidden; will-change:transform }
+    .btn:hover{ background:var(--neon-green); color:var(--bg); text-shadow:none; box-shadow:0 0 10px var(--neon-green), inset 0 0 10px var(--neon-green); transform:translateY(-2px) }
+    .btn.ghost{ border-color:var(--neon-pink); color:var(--neon-pink); text-shadow:0 0 5px var(--neon-pink), 0 0 10px var(--neon-pink); box-shadow:0 0 5px var(--neon-pink), inset 0 0 5px var(--neon-pink) }
+    .btn.ghost:hover{ background:var(--neon-pink); color:var(--bg); text-shadow:none; box-shadow:0 0 10px var(--neon-pink), inset 0 0 10px var(--neon-pink); transform:translateY(-2px) }
+    /* hash sweep on buttons */
+    .btn::after{content:""; position:absolute; inset:-1px; background:repeating-linear-gradient(75deg, rgba(255,255,255,.15) 0 2px, transparent 2px 4px); transform:translateX(-120%); opacity:0; transition:.25s}
+    .btn:hover::after{opacity:.25; transform:translateX(0)}
+    /* neon ripple on click */
+    .ripple{position:absolute; border-radius:50%; transform: translate(-50%,-50%) scale(0); pointer-events:none; width:12px; height:12px; opacity:.55; background: currentColor; box-shadow:0 0 14px currentColor; animation:ripple .6s ease-out forwards}
+    @keyframes ripple{ to{ transform: translate(-50%,-50%) scale(18); opacity:0 } }
+    /* parallax glare for tilt */
+    .glare{position:absolute; inset:-1px; pointer-events:none; opacity:0; mix-blend-mode:screen; transition:.2s}
+
+    .tag{ padding:.35rem .8rem; border:2px dashed var(--neon-blue); color:var(--neon-blue); font-size:.8rem; font-weight:700; background:transparent; box-shadow:0 0 5px var(--neon-blue); transition:all .2s; cursor:pointer; position:relative }
+    .tag:hover,.tag.active{ background:var(--neon-blue); color:var(--bg); box-shadow:0 0 15px var(--neon-blue); transform:scale(1.05) }
+
+    .card{ background:var(--bg-elev); border:2px solid var(--muted); box-shadow:0 0 10px rgba(0,0,0,.5); transition:transform .2s ease, box-shadow .3s ease; position:relative; will-change:transform; transform-style:preserve-3d; overflow:hidden; border-radius:10px }
+    .card::before{ content:""; position:absolute; inset:-2px; z-index:-1; border:2px solid var(--neon-green); opacity:0; transition: opacity .3s ease, transform .3s ease; transform: scale(1.02); border-radius:12px }
+    .card:hover{ box-shadow:0 0 20px rgba(0,0,0,.8) }
+    .card:hover::before{ opacity:1; transform:scale(1) }
+    /* hash sweep across card */
+    @keyframes sweep{to{transform:translateX(120%)}}
+    .card.hash::after{content:""; position:absolute; inset:-2px; border-radius:12px; background:repeating-linear-gradient(90deg, rgba(0,255,255,.0) 0 10px, rgba(0,255,255,.12) 10px 20px); mix-blend-mode:screen; transform:translateX(-120%); opacity:0; pointer-events:none}
+    .card.hash:hover::after{animation:sweep .8s linear forwards; opacity:1}
+
+    .title{ font-size:clamp(1.5rem,1.1rem + 1.8vw,2.25rem); font-family:'Major Mono Display',monospace; line-height:1.2; font-weight:400; text-shadow:0 0 5px var(--neon-pink),0 0 10px var(--neon-pink); transition:text-shadow .3s ease; position:relative }
+    .title:hover{ text-shadow:0 0 10px var(--neon-pink),0 0 20px var(--neon-pink) }
+    /* marching ants header line */
+    .title::before{content:""; display:block; height:var(--dash-thickness); margin-bottom:.35rem; background:repeating-linear-gradient(90deg, var(--dash) 0 calc(var(--dash-size)/2), transparent calc(var(--dash-size)/2) var(--dash-size)); background-size:var(--dash-size) 100%; animation:moveX 1s linear infinite; opacity:.8}
+    /* neon gradient underline */
+    .title::after{content:""; display:block; height:2px; background:linear-gradient(90deg, transparent, var(--neon-blue), var(--neon-pink), transparent); background-size:200% 100%; animation:dash 3s linear infinite; opacity:.6; margin-top:.35rem}
+    @keyframes dash{ to{ background-position:-200% 0 } }
+
+    @keyframes jitter{0%,100%{transform:none}20%{transform:translate(1px,-1px)}40%{transform:translate(-1px,1px)}60%{transform:translate(1px,0)}80%{transform:translate(-1px,0)}}
+    .glitch-jitter{ animation:jitter .22s steps(2,end) }
+
+    .muted{color:var(--muted)}
+    .pill{ display:inline-block; padding:.4rem .9rem; background:transparent; border:2px dashed var(--neon-green); color:var(--neon-green); font-weight:700; letter-spacing:.02em; position:relative }
+    .pill:hover::after{content:""; position:absolute; inset:0; border-radius:4px; background:repeating-linear-gradient(90deg, rgba(255,255,255,.25) 0 8px, transparent 8px 16px); animation:moveX 1.1s linear infinite; opacity:.25 }
+    .section{padding-block:clamp(2.5rem,4vw,5rem); position:relative }
+    /* section dashed divider */
+    .section::after{content:""; position:absolute; left:0; right:0; bottom:0; height:2px; background:repeating-linear-gradient(90deg, var(--dash) 0 10px, transparent 10px 20px); animation:moveX 1.4s linear infinite; opacity:.25}
+
+    /* Text Glitch shells */
+    .glitch-text{ position:relative; cursor:pointer }
+    .glitch-text::before,.glitch-text::after{ content:attr(data-text); position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:hidden; clip: rect(0, 0, 0, 0) }
+    .glitch-text::before{ left:2px; text-shadow:-1px 0 var(--neon-pink) }
+    .glitch-text::after{ left:-2px; text-shadow:1px 0 var(--neon-blue) }
+
+    /* ===== HEADER ===== */
+    header{ position:sticky; top:0; z-index:50; backdrop-filter:saturate(180%) blur(5px); background:rgba(13,17,23,.8); border-bottom:2px dashed var(--muted)}
+    nav.container{ display:flex; align-items:center; justify-content:space-between; padding:.75rem 0 }
+    .brand{ display:flex; gap:.6rem; align-items:center; font-weight:800; font-family:'Major Mono Display',monospace; font-size:1.2rem; text-shadow:0 0 5px var(--neon-green) }
+    .brand-text p{ margin:0 }
+    .nav-links{ display:flex; gap:.4rem; align-items:center; flex-wrap:wrap }
+    .nav-links a{ padding:.45rem .75rem; transition:all .2s ease; border:2px dashed transparent; border-radius:8px }
+    .nav-links a.active,.nav-links a:hover{ border-color:var(--neon-pink); color:var(--neon-pink); text-shadow:0 0 5px var(--neon-pink) }
+    .theme-toggle{ border:2px dashed var(--muted); padding:.45rem .65rem; display:inline-flex; gap:.5rem; align-items:center; background:transparent; border-radius:10px }
+    .theme-toggle button{ color:var(--neon-green); background:none; border:none; cursor:pointer; padding:0; font-size:1.25rem; text-shadow:0 0 5px var(--neon-green); transition:.2s }
+    .theme-toggle button:hover{ color:var(--neon-pink); text-shadow:0 0 5px var(--neon-pink) }
+
+    /* === BRAND 3D CUBE === */
+    .brand .logo-3d{ --cube-size:40px; width:var(--cube-size); height:var(--cube-size); position:relative; perspective:600px; filter: drop-shadow(0 0 8px var(--neon-green)); }
+    .logo-3d .cube{ position:absolute; inset:0; transform-style:preserve-3d; animation:cube-roll 6s linear infinite; }
+    .logo-3d .face{ position:absolute; width:var(--cube-size); height:var(--cube-size); background:linear-gradient(135deg, rgba(0,255,255,.08), rgba(0,255,255,.02)); border:2px dashed var(--neon-green); box-shadow: inset 0 0 12px var(--neon-green), 0 0 8px rgba(0,255,255,.25); backface-visibility:hidden; }
+    .logo-3d .front{ transform: translateZ(calc(var(--cube-size)/2)); }
+    .logo-3d .back{ transform: rotateY(180deg) translateZ(calc(var(--cube-size)/2)); }
+    .logo-3d .right{ transform: rotateY(90deg) translateZ(calc(var(--cube-size)/2)); }
+    .logo-3d .left{ transform: rotateY(-90deg) translateZ(calc(var(--cube-size)/2)); }
+    .logo-3d .top{ transform: rotateX(90deg) translateZ(calc(var(--cube-size)/2)); }
+    .logo-3d .bottom{ transform: rotateX(-90deg) translateZ(calc(var(--cube-size)/2)); }
+    .brand:hover .logo-3d .cube{ animation-duration:2.2s }
+
+    @keyframes cube-roll{ 0%{ transform: rotateX(25deg) rotateY(0deg) rotateZ(0deg) } 50%{ transform: rotateX(385deg) rotateY(180deg) rotateZ(180deg) } 100%{ transform: rotateX(745deg) rotateY(360deg) rotateZ(360deg) } } 50%{ transform: rotateX(385deg) rotateY(180deg) rotateZ(180deg) } 100%{ transform: rotateX(745deg) rotateY(360deg) rotateZ(360deg) } }
+
+    @media (prefers-reduced-motion: reduce){ .logo-3d .cube{ animation:none !important } }
+    @media (min-width:768px){ .brand .logo-3d{ --cube-size:48px } }
+    @media (max-width:420px){ .brand .logo-3d{ --cube-size:32px } } }
+
+    /* ===== HERO ===== */
+    .hero{ display:grid; align-items:center; grid-template-columns:1fr; gap:2rem }
+    .hero .headline{ position:relative; font-size:clamp(2.2rem,1.8rem + 2.5vw,4rem); font-weight:900; letter-spacing:-.02em; line-height:1.1; font-family:'Major Mono Display',monospace; text-shadow:0 0 5px var(--neon-blue), 0 0 10px var(--neon-blue) }
+    .hero p{ font-size:clamp(1rem,.95rem + .3vw,1.15rem) }
+    .hero .cta{ display:flex; gap:.8rem; flex-wrap:wrap; margin-top:1rem }
+
+    /* ===== SECTIONS ===== */
+    .services .grid{ grid-template-columns:repeat(3,1fr) }
+    .about .cols{ grid-template-columns:1fr 1fr }
+    .skills .grid{ grid-template-columns:repeat(3,1fr) }
+    .projects .grid{ grid-template-columns:repeat(3,1fr) }
+
+    .project{ display:flex; flex-direction:column; border:2px dashed var(--muted); box-shadow:0 0 5px rgba(0,0,0,0.5); opacity:0; transform:translateY(10px); transition:opacity .5s ease, transform .5s ease, clip-path .8s ease; clip-path: inset(0 100% 0 0); border-radius:12px }
+    .project.visible{ opacity:1; transform:none; clip-path: inset(0 0 0 0) }
+    .project .thumb{ aspect-ratio:16/10; background:var(--bg); display:grid; place-items:center; border-bottom:2px dashed var(--muted); position:relative; overflow:hidden }
+    .project .thumb i{ font-size:4rem; color:var(--neon-green); text-shadow:0 0 5px var(--neon-green) }
+    .project h3{ font-size:1.1rem; font-family:'Space Mono',monospace; font-weight:700 }
+    .project .meta{ display:flex; gap:.4rem; flex-wrap:wrap }
+    /* flowing hex overlay — responsive */
+    .hashflow{ position:absolute; inset:0; padding:.6rem; color:var(--neon-blue); font-family:'VT323', monospace; font-weight:700; font-size:clamp(9px,1.1vw,14px); line-height:1.2; background:linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.45)); opacity:0; transform:translateY(8%); transition:.3s; pointer-events:none; white-space:pre; overflow:hidden }
+    .project:hover .hashflow{ opacity:.9; transform:translateY(0) }
+    /* scanline burst on hover */
+    .project .thumb::after{content:""; position:absolute; inset:0; background:repeating-linear-gradient(to bottom, transparent 0 3px, rgba(0,255,255,.12) 3px 4px); opacity:0; transition:.2s}
+    .project:hover .thumb::after{opacity:.6}
+    .project.visible .thumb::before{content:""; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(0,255,255,.25), transparent); transform:translateX(-100%); animation:sweepX 1s ease-out forwards}
+    @keyframes sweepX{ to{ transform:translateX(100%) } }
+
+    /* marching ants overlay for cards (injected element) */
+    .dashants{position:absolute; inset:3px; border-radius:10px; pointer-events:none; opacity:.35}
+    .dashants::before{content:""; position:absolute; inset:0; border-radius:inherit; background:
+      repeating-linear-gradient(90deg, var(--dash) 0 calc(var(--dash-size)/2), transparent calc(var(--dash-size)/2) var(--dash-size)),
+      repeating-linear-gradient(180deg, var(--dash) 0 calc(var(--dash-size)/2), transparent calc(var(--dash-size)/2) var(--dash-size)),
+      repeating-linear-gradient(270deg, var(--dash) 0 calc(var(--dash-size)/2), transparent calc(var(--dash-size)/2) var(--dash-size)),
+      repeating-linear-gradient(0deg, var(--dash) 0 calc(var(--dash-size)/2), transparent calc(var(--dash-size)/2) var(--dash-size));
+      background-size: calc(100% - 0px) var(--dash-thickness), var(--dash-thickness) calc(100% - 0px), calc(100% - 0px) var(--dash-thickness), var(--dash-thickness) calc(100% - 0px);
+      background-position: 0 0, 100% 0, 0 100%, 0 0; background-repeat:no-repeat; animation:ants 1.2s linear infinite; filter:drop-shadow(0 0 4px var(--dash)); }
+    .card:hover .dashants{opacity:.85}
+    @keyframes ants{ to{ background-position: var(--dash-size) 0, 100% var(--dash-size), calc(var(--dash-size)*-1) 100%, 0 calc(var(--dash-size)*-1) } }
+
+    .timeline{ position:relative; padding-left:1.25rem }
+    .timeline::before{ content:""; position:absolute; left:.3rem; top:.25rem; bottom:.25rem; width:2px; background:repeating-linear-gradient(to bottom, var(--neon-blue) 0 8px, transparent 8px 16px) }
+    .timeline .item{ position:relative; padding-left:1rem }
+    .timeline .item::before{ content:""; position:absolute; left:-.27rem; top:.4rem; width:.55rem; height:.55rem; border:2px dashed var(--neon-pink); background:var(--bg) }
+
+    .contact .grid{ grid-template-columns:1.2fr .8fr }
+    form{ display:grid; gap:.9rem }
+    input,textarea{ width:100%; padding:.8rem 1rem; background:var(--bg-elev); color:var(--text); border:2px dashed var(--muted); transition:border-color .2s ease, box-shadow .2s ease }
+    input:focus,textarea:focus{ outline:none; border-color:var(--neon-green); box-shadow:0 0 5px var(--neon-green) }
+    .form-row{ display:grid; gap:.9rem; grid-template-columns:1fr 1fr }
+    .status{ font-size:.95rem; transition:color .3s ease }
+
+    footer{ border-top:2px dashed var(--muted); padding:2rem 0; color:var(--muted); font-size:.9rem }
+    footer a{ font-weight:700; color:var(--text) }
+
+    /* Back to top button */
+    .back-to-top{ position:fixed; bottom:20px; right:20px; width:50px; height:50px; background-color:var(--neon-pink); color:var(--bg); border:2px dashed var(--neon-pink); cursor:pointer; opacity:0; visibility:hidden; transition:opacity .3s ease, visibility .3s ease; display:grid; place-items:center; box-shadow:0 0 10px var(--neon-pink); z-index:100 }
+    .back-to-top.visible{ opacity:1; visibility:visible }
+    .back-to-top:hover{ box-shadow:0 0 20px var(--neon-pink) }
+
+    /* Terminal widgets */
+    .terminal-container{ position:fixed; bottom:20px; left:20px; width:clamp(300px,40vw,500px); height:clamp(260px,42vh,380px); background:rgba(13,17,23,.9); border:2px dashed var(--neon-blue); box-shadow:0 0 10px var(--neon-blue); color:var(--neon-green); font-family:'Space Mono',monospace; z-index:600; display:flex; flex-direction:column; padding:1rem; visibility:hidden; opacity:0; transition:.3s; border-radius:10px }
+    .terminal-container.visible{ visibility:visible; opacity:1 }
+    .terminal-container .header{ display:flex; justify-content:space-between; align-items:center; border-bottom:2px dashed var(--neon-blue); padding-bottom:.5rem; margin-bottom:.5rem }
+    .terminal-container .header i{ cursor:pointer; color:var(--neon-pink); transition:.2s }
+    .terminal-container .header i:hover{ color:var(--neon-green) }
+    .terminal-output{ flex-grow:1; min-height:0; overflow-y:auto; white-space:pre-wrap; word-wrap:break-word; font-size:.8rem; line-height:1.4; scrollbar-width:thin; scrollbar-color:var(--neon-blue) transparent }
+    .terminal-output::-webkit-scrollbar{ width:8px }
+    .terminal-output::-webkit-scrollbar-thumb{ background-color:var(--neon-blue); border-radius:4px }
+    .terminal-input-container{ display:flex; align-items:center; border-top:2px dashed var(--neon-blue); padding-top:.5rem }
+    .terminal-input-container input{ background:transparent; border:none; color:var(--neon-green); flex-grow:1; outline:none }
+    .terminal-input-container input::placeholder{ color:var(--muted) }
+    .terminal-toggle{ position:fixed; bottom:20px; left:20px; z-index:201; background:rgba(13,17,23,.9); border:2px dashed var(--neon-blue); color:var(--neon-blue); padding:.5rem 1rem; cursor:pointer; transition:.2s; box-shadow:0 0 10px var(--neon-blue); font-family:'Space Mono',monospace; font-size:.9rem; border-radius:10px }
+    .terminal-toggle:hover{ transform:scale(1.05); box-shadow:0 0 15px var(--neon-blue) }
+    /* hide toggle while console open so it doesn't cover input */
+    #terminal.visible + #toggleTerminalBtn{ opacity:0; pointer-events:none }
+
+    /* ===== UTIL ===== */
+    .chips{ display:flex; flex-wrap:wrap; gap:.5rem }
+    .center{ display:grid; place-items:center }
+    .between{ display:flex; align-items:center; justify-content:space-between }
+    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0 }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width:980px){ .hero{grid-template-columns:1fr} .about .cols, .contact .grid, .services .grid{grid-template-columns:1fr} .skills .grid, .projects .grid{grid-template-columns:repeat(2,1fr)} .nav-links{ display:flex; flex-wrap:wrap; justify-content:center; gap:.2rem } }
+    @media (max-width:640px){ .nav-links{display:none} .skills .grid, .projects .grid, .services .grid{grid-template-columns:1fr} .form-row{ grid-template-columns:1fr } }
+
+    /* ===== PRINT (Monochrome) ===== */
+    @media print{
+      #matrixBg,#cursorFx,#sweepFx,#dashGrid,body::before,body::after,header,.filters,.cta,.contact form,.theme-toggle,.back-to-top,.terminal-container,.terminal-toggle{display:none!important}
+      body{ color:#111; background:none }
+      .card{ box-shadow:none; border:1px solid #999 }
+      .section{ padding-block:1.2rem }
+      .nav-links a.active,.btn{ color:#000!important; background:none!important; text-shadow:none!important; border-color:#000!important; box-shadow:none!important }
+      .title{ color:#000; text-shadow:none }
+    }
+
+    /* reduce motion safety */
+    @media (prefers-reduced-motion: reduce){ *,*::before,*::after{animation:none!important; transition:none!important} .hashflow,.card.hash::after,.dashants,.section::after,.title::before{display:none!important} }
+
+    /* feature toggles */
+    .hash-off .hashflow,.hash-off .card.hash::after{ display:none!important }
+    .tilt-off .card,.tilt-off .btn{ transform:none!important }
+    .dashes-off .dashants,.dashes-off .section::after,.dashes-off .title::before,.dashes-off #dashGrid{ display:none!important }
+    .dash-pulse .dashants::before{ filter: drop-shadow(0 0 8px var(--dash)) drop-shadow(0 0 14px var(--dash)); }
+
+    /* animations */
+    @keyframes moveX{ to{ background-position:var(--dash-size) 0 } }
+  </style>
+</head>
+<body>
+  <!-- Matrix background -->
+  <canvas id="matrixBg" aria-hidden="true"></canvas>
+  <!-- Cursor FX + Screen sweep -->
+  <canvas id="cursorFx" aria-hidden="true"></canvas>
+  <div id="sweepFx" aria-hidden="true"></div>
+  <!-- Dashed grid overlay (toggle with console: dashes net) -->
+  <div id="dashGrid" aria-hidden="true"></div>
+
+  <!-- Back to Top Button -->
+  <button id="backToTopBtn" class="back-to-top" title="Go to top"><i class="fas fa-arrow-up"></i></button>
+
+  <!-- Terminal Interface -->
+  <div id="terminal" class="terminal-container">
+    <div class="header"><span>[ SYSTEM CONSOLE ]</span><i id="closeTerminalBtn" class="fas fa-times"></i></div>
+    <div id="terminalOutput" class="terminal-output">
+      <span style="color:var(--neon-pink)">> Initializing main protocol...</span><br>
+      <span style="color:var(--neon-green)">> Awaiting command. Type 'help' for options.</span><br>
+    </div>
+    <div class="terminal-input-container">
+      <label for="terminalInput">&gt;_</label>
+      <input type="text" id="terminalInput" placeholder="Enter command" />
+    </div>
+  </div>
+  <button id="toggleTerminalBtn" class="terminal-toggle"><i class="fas fa-terminal"></i> // CONSOLE_TOGGLE</button>
+
+  <!-- ===== Header ===== -->
+  <header>
+    <nav class="container">
+      <a href="#home" class="brand" aria-label="Go to top">
+        <span class="logo-3d" aria-hidden="true">
+          <span class="cube">
+            <span class="face front"></span>
+            <span class="face back"></span>
+            <span class="face right"></span>
+            <span class="face left"></span>
+            <span class="face top"></span>
+            <span class="face bottom"></span>
+          </span>
+        </span>
+        <span class="brand-text glitch-text hash-cycle" data-text="Your Name">Your Name</span>
+      </a>
+      <div class="between" style="gap:.5rem">
+        <div class="nav-links" role="navigation" aria-label="Primary">
+          <a href="#projects" class="glitch-text hash-cycle" data-text="Projects">Projects</a>
+          <a href="#skills" class="glitch-text hash-cycle" data-text="Skills">Skills</a>
+          <a href="#experience" class="glitch-text hash-cycle" data-text="Experience">Experience</a>
+          <a href="#about" class="glitch-text hash-cycle" data-text="About">About</a>
+          <a href="#contact" class="glitch-text hash-cycle" data-text="Contact">Contact</a>
+        </div>
+        <div class="theme-toggle" role="group" aria-label="Theme toggle">
+          <button id="printBtn" title="Print / Save PDF" aria-label="Print resume"><i class="fas fa-print"></i></button>
+          <button id="themeBtn" title="Toggle theme" aria-label="Toggle theme"><i class="fas fa-adjust"></i></button>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ===== Hero ===== -->
+  <section id="home" class="section container hero">
+    <div>
+      <span class="pill glitch-text" data-text="CREATIVE_ENGINEER &gt;">CREATIVE_ENGINEER &gt;</span>
+      <h1 class="headline" style="margin-top:.6rem">
+        <span class="terminal-text-container" id="heroHeadline" data-text-content="Crafting_the_glitch_in_the_system"></span>
+      </h1>
+      <p class="muted" style="margin-top:.6rem">
+        <span class="terminal-text-container" id="heroBioText" data-text-content="I'm Your Name, a developer who specializes in building things that defy expectations. I create digital artifacts that are a little broken, but in a beautiful way."></span>
+      </p>
+      <div class="cta">
+        <a href="#projects" class="btn glitch-text" data-text="View My Code">View My Code <i class="fas fa-arrow-right"></i></a>
+        <a href="#contact" class="btn ghost glitch-text" data-text="// MESSAGE_ME">// MESSAGE_ME</a>
+      </div>
+      <div class="chips" style="margin-top:1rem">
+        <span class="tag">JavaScript</span><span class="tag">CSS_Art</span><span class="tag">Web_GL</span><span class="tag">Node.js</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Services ===== -->
+  <section id="services" class="section container services">
+    <h2 class="title glitch-text hash-cycle" data-text="My_Processes" style="margin-bottom:1.5rem">My_Processes</h2>
+    <div class="grid">
+      <article class="card hash" style="padding:2rem 1rem; text-align:center;">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <i class="fas fa-brain" style="font-size:2.5rem; margin-bottom:1rem; color:var(--neon-green); text-shadow:0 0 5px var(--neon-green);"></i>
+        <h3 class="font-semibold text-lg glitch-text hash-cycle" data-text="CONCEPTUALIZE">CONCEPTUALIZE</h3>
+        <p class="muted text-sm mt-2">Breaking down the brief into its core data points and reassembling them.</p>
+      </article>
+      <article class="card hash" style="padding:2rem 1rem; text-align:center;">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <i class="fas fa-keyboard" style="font-size:2.5rem; margin-bottom:1rem; color:var(--neon-green); text-shadow:0 0 5px var(--neon-green);"></i>
+        <h3 class="font-semibold text-lg glitch-text hash-cycle" data-text="IMPLEMENT">IMPLEMENT</h3>
+        <p class="muted text-sm mt-2">Writing clean, modular code, even when the final output is chaotic.</p>
+      </article>
+      <article class="card hash" style="padding:2rem 1rem; text-align:center;">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <i class="fas fa-satellite-dish" style="font-size:2.5rem; margin-bottom:1rem; color:var(--neon-green); text-shadow:0 0 5px var(--neon-green);"></i>
+        <h3 class="font-semibold text-lg glitch-text hash-cycle" data-text="DEPLOY">DEPLOY</h3>
+        <p class="muted text-sm mt-2">Delivering projects that stand out from the noise.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== Projects ===== -->
+  <section id="projects" class="section container projects">
+    <div class="between" style="margin-bottom:1.5rem">
+      <h2 class="title glitch-text hash-cycle" data-text="Projects_//_Log">Projects_//_Log</h2>
+      <div class="chips filters" aria-label="Project filters">
+        <button class="tag active" data-filter="all">All</button>
+        <button class="tag" data-filter="web">Web</button>
+        <button class="tag" data-filter="art">Art</button>
+        <button class="tag" data-filter="tools">Tools</button>
+      </div>
+    </div>
+    <div class="grid" id="project-grid">
+      <article class="card project hash" data-tags="web art" tabindex="0">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <div class="thumb center"><i class="fas fa-project-diagram"></i></div>
+        <div style="padding:1rem">
+          <div class="between" style="gap:.6rem; margin-bottom:.6rem">
+            <h3 class="glitch-text hash-cycle" data-text="NON-LINEAR_MEDIA">NON-LINEAR_MEDIA</h3>
+            <div class="meta"><span class="tag">P5.JS</span><span class="tag">Web</span></div>
+          </div>
+          <p class="muted">An exploration into non-linear narratives with interactive web components.</p>
+          <div class="between" style="margin-top:.8rem; gap:.5rem">
+            <a class="btn" href="#">View</a>
+            <a class="btn ghost" href="#">Fork</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card project hash" data-tags="tools" tabindex="0">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <div class="thumb center"><i class="fas fa-microchip"></i></div>
+        <div style="padding:1rem">
+          <div class="between" style="gap:.6rem; margin-bottom:.6rem">
+            <h3 class="glitch-text hash-cycle" data-text="DATA_VISUALIZER_V.2">DATA_VISUALIZER_V.2</h3>
+            <div class="meta"><span class="tag">D3.js</span><span class="tag">JS</span></div>
+          </div>
+          <p class="muted">A tool that turns raw data into hypnotic, animated visualizations.</p>
+          <div class="between" style="margin-top:.8rem; gap:.5rem">
+            <a class="btn" href="#">View</a>
+            <a class="btn ghost" href="#">Fork</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card project hash" data-tags="web" tabindex="0">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <div class="thumb center"><i class="fas fa-infinity"></i></div>
+        <div style="padding:1rem">
+          <div class="between" style="gap:.6rem; margin-bottom:.6rem">
+            <h3 class="glitch-text hash-cycle" data-text="INFINITE_LANDSCAPE">INFINITE_LANDSCAPE</h3>
+            <div class="meta"><span class="tag">React</span><span class="tag">Three.js</span></div>
+          </div>
+          <p class="muted">A procedural 3D landscape that generates a unique world every time it loads.</p>
+          <div class="between" style="margin-top:.8rem; gap:.5rem">
+            <a class="btn" href="#">View</a>
+            <a class="btn ghost" href="#">Fork</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="card project hash" data-tags="web tools" tabindex="0">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <div class="thumb center"><i class="fas fa-robot"></i></div>
+        <div style="padding:1rem">
+          <div class="between" style="gap:.6rem; margin-bottom:.6rem">
+            <h3 class="glitch-text hash-cycle" data-text="AI_GENERATOR">AI_GENERATOR</h3>
+            <div class="meta"><span class="tag">Node.js</span><span class="tag">API</span></div>
+          </div>
+          <p class="muted">A command-line tool that generates surreal poetry using AI models.</p>
+          <div class="between" style="margin-top:.8rem; gap:.5rem">
+            <a class="btn" href="#">View</a>
+            <a class="btn ghost" href="#">Fork</a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== Skills ===== -->
+  <section id="skills" class="section container skills">
+    <h2 class="title glitch-text hash-cycle" data-text="Skills_&_Tech" style="margin-bottom:1.5rem">Skills_&_Tech</h2>
+    <div class="grid">
+      <div class="card hash" style="padding:1.5rem;">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <h3 class="glitch-text hash-cycle" data-text="DECRYPTION_">DECRYPTION_</h3>
+        <div class="chips" style="margin-top:.8rem"><span class="tag">CSS</span><span class="tag">GLSL</span><span class="tag">THREE.JS</span></div>
+        <p class="muted" style="margin-top:.4rem">Generating new visuals from simple code.</p>
+      </div>
+      <div class="card hash" style="padding:1.5rem;">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <h3 class="glitch-text hash-cycle" data-text="COMPUTATION_">COMPUTATION_</h3>
+        <div class="chips" style="margin-top:.8rem"><span class="tag">JS</span><span class="tag">React</span><span class="tag">Vue</span><span class="tag">Python</span></div>
+        <p class="muted" style="margin-top:.4rem">Building complex systems from the ground up.</p>
+      </div>
+      <div class="card hash" style="padding:1.5rem;">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <h3 class="glitch-text hash-cycle" data-text="ANALYSIS_">ANALYSIS_</h3>
+        <div class="chips" style="margin-top:.8rem"><span class="tag">API</span><span class="tag">Node.js</span><span class="tag">WebAssembly</span></div>
+        <p class="muted" style="margin-top:.4rem">Unlocking the full potential of data and hardware.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Experience ===== -->
+  <section id="experience" class="section container">
+    <h2 class="title glitch-text hash-cycle" data-text="My_Trajectory" style="margin-bottom:1.5rem">My_Trajectory</h2>
+    <div class="card hash" style="padding:1.5rem;">
+      <span class="dashants" aria-hidden="true"></span>
+      <div class="glare" aria-hidden="true"></div>
+      <div class="timeline grid" style="gap:1.5rem">
+        <div class="item"><div class="between"><strong>Creative Coder // [REDACTED]</strong><span class="muted">2023 // Present</span></div><p class="muted">Developing experimental interfaces and digital art for clients with an eye toward the future.</p></div>
+        <div class="item"><div class="between"><strong>Freelance Developer // Self-Employed</strong><span class="muted">2020 // 2023</span></div><p class="muted">Built a range of creative projects from interactive websites to small-scale tools.</p></div>
+        <div class="item"><div class="between"><strong>BS, Computer Science // Cybernetics Lab</strong><span class="muted">2016 // 2020</span></div><p class="muted">Focused on the intersection of human-computer interaction and machine learning.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== About ===== -->
+  <section id="about" class="section container about">
+    <h2 class="title glitch-text hash-cycle" data-text="DATA_PROFILE" style="margin-bottom:1.5rem">DATA_PROFILE</h2>
+    <div class="grid cols">
+      <div class="card hash" style="padding:1.5rem;">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <p id="aboutText">My work is a reaction to the polished, predictable web. I'm fascinated by systems that are just on the verge of breaking—where the noise becomes the signal and the imperfection is the point.</p>
+        <p style="margin-top:.8rem">I'm currently exploring generative art, the aesthetics of data corruption, and how to create truly unique online experiences.</p>
+        <button type="button" id="generateBioBtn" class="tag" style="margin-top:1rem"><i class="fas fa-microchip"></i> // REWRITE_BIO</button>
+      </div>
+      <div class="card hash" style="padding:1.5rem;">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <h3 class="glitch-text hash-cycle" data-text="CORE_DIRECTIVES" style="margin-bottom:.5rem">CORE_DIRECTIVES</h3>
+        <ul role="list" class="grid" style="gap:.5rem">
+          <li><i class="fas fa-caret-right" style="color:var(--neon-green)"></i> Question the default</li>
+          <li><i class="fas fa-caret-right" style="color:var(--neon-green)"></i> Embrace the chaotic</li>
+          <li><i class="fas fa-caret-right" style="color:var(--neon-green)"></i> Find beauty in the broken</li>
+          <li><i class="fas fa-caret-right" style="color:var(--neon-green)"></i> Create with intent</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Contact ===== -->
+  <section id="contact" class="section container contact">
+    <h2 class="title glitch-text hash-cycle" data-text="SEND_MESSAGE_TO_SERVER" style="margin-bottom:1.5rem">SEND_MESSAGE_TO_SERVER</h2>
+    <div class="grid">
+      <form id="contactForm" class="card hash" style="padding:1.5rem;" novalidate>
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <div class="form-row">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-400">INPUT_NAME</label>
+            <input id="name" name="name" autocomplete="name" required placeholder="Your name" />
+          </div>
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-400">INPUT_EMAIL</label>
+            <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+          </div>
+        </div>
+        <div>
+          <label for="subject" class="block text-sm font-medium text-gray-400">INPUT_SUBJECT (optional)</label>
+          <input id="subject" name="subject" placeholder="A brief summary" />
+        </div>
+        <div>
+          <label for="message" class="block text-sm font-medium text-gray-400">INPUT_MESSAGE</label>
+          <textarea id="message" name="message" rows="5" required placeholder="Tell me about your project..."></textarea>
+        </div>
+        <div class="between">
+          <div id="formStatusContainer"><p class="status muted" id="formStatus" role="status" aria-live="polite"></p></div>
+          <button class="btn" type="submit">SEND_</button>
+        </div>
+      </form>
+
+      <div class="card hash" style="padding:1.5rem;">
+        <span class="dashants" aria-hidden="true"></span>
+        <div class="glare" aria-hidden="true"></div>
+        <h3>CONTACT_PROTOCOLS</h3>
+        <div class="grid" style="grid-template-columns:1fr 1fr; gap:.8rem; margin-top:.8rem">
+          <a class="tag" href="#" title="Behance"><i class="fab fa-behance"></i> // ART</a>
+          <a class="tag" href="#" title="Dribbble"><i class="fab fa-dribbble"></i> // DESIGN</a>
+          <a class="tag" href="#" title="GitHub"><i class="fab fa-github"></i> // GITHUB</a>
+          <a class="tag" href="mailto:you@example.com" title="Email"><i class="fas fa-envelope"></i> // EMAIL</a>
+        </div>
+        <p class="muted" style="margin-top:1.5rem">STATUS: ONLINE · READY FOR CONNECTION</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container between">
+      <small>// (C) <span id="year"></span> YOUR NAME // ALL_RIGHTS_RESERVED</small>
+      <small><a href="#home">// REBOOT_TOP</a></small>
+    </div>
+  </footer>
+
+  <script>
+    /* ---------- MATRIX RAIN BACKGROUND (dual-color + speed control) ---------- */
+    const matrix=document.getElementById('matrixBg'); const mctx=matrix.getContext('2d');
+    let cols,drops,raining=true,speed=1.0; const matrixChars='アイウエオカキクケコサシスセソ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ[]{}<>+-*/=%#$'; const fontSize=16;
+    function cssVar(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
+    function resizeMatrix(){ matrix.width=innerWidth; matrix.height=innerHeight; cols=Math.floor(matrix.width/(fontSize-2)); drops=Array(cols).fill(1); }
+    function drawMatrix(){ if(!raining) return; mctx.fillStyle='rgba(13,17,23,0.16)'; mctx.fillRect(0,0,matrix.width,matrix.height);
+      mctx.fillStyle=cssVar('--matrix')||'#00ffff'; mctx.font=fontSize+'px VT323, monospace';
+      for(let i=0;i<drops.length;i++){ const t=matrixChars[Math.floor(Math.random()*matrixChars.length)]; mctx.fillText(t, i*(fontSize-2), drops[i]*fontSize); if(drops[i]*fontSize>matrix.height && Math.random()>0.975) drops[i]=0; drops[i]+=speed; }
+      if(document.body.classList.contains('root')){ mctx.fillStyle=cssVar('--neon-pink')||'#ff1493'; for(let i=0;i<Math.min(20,cols);i++){ const x=Math.floor(Math.random()*cols); const y=Math.floor(Math.random()*(matrix.height/fontSize)); const t=matrixChars[Math.floor(Math.random()*matrixChars.length)]; mctx.fillText(t, x*(fontSize-2)+2, y*fontSize+2); } }
+      requestAnimationFrame(drawMatrix);
+    }
+    addEventListener('resize', resizeMatrix); resizeMatrix(); drawMatrix();
+
+    /* ---------- Cursor particle trail (neon glyphs) ---------- */
+    const trailCanvas=document.getElementById('cursorFx'); const tctx=trailCanvas.getContext('2d');
+    let trailOn=true, particles=[], ptsPerMove=4; const glyphs='01#%$ABCDEF{}[]<>+-';
+    function resizeTrail(){ trailCanvas.width=innerWidth; trailCanvas.height=innerHeight; }
+    function rand(a,b){ return Math.random()*(b-a)+a } function pick(arr){ return arr[Math.floor(Math.random()*arr.length)] }
+    function addParticle(x,y,color){ particles.push({x,y, vx:rand(-0.6,0.6), vy:rand(-1.2,-0.2), life:1, char:pick(glyphs), color}); if(particles.length>300) particles.splice(0, particles.length-300); }
+    function drawTrail(){ tctx.clearRect(0,0,trailCanvas.width,trailCanvas.height); tctx.font='14px VT323, monospace'; for(let i=0;i<particles.length;i++){ const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.life-=0.02; if(p.life<=0){ particles.splice(i,1); i--; continue; } tctx.globalAlpha=Math.max(0,p.life); tctx.shadowBlur=12; tctx.shadowColor=p.color; tctx.fillStyle=p.color; tctx.fillText(p.char,p.x,p.y);} tctx.globalAlpha=1; tctx.shadowBlur=0; requestAnimationFrame(drawTrail); }
+    function emitBurst(x,y,n=18){ const cols=['#00ffff','#39ff14','#ff1493']; for(let i=0;i<n;i++) addParticle(x,y, pick(cols)); }
+    addEventListener('pointermove', e=>{ if(!trailOn) return; for(let i=0;i<ptsPerMove;i++) addParticle(e.clientX,e.clientY, pick(['#00ffff','#39ff14','#ff1493'])); });
+    addEventListener('resize', resizeTrail); resizeTrail(); drawTrail();
+
+    /* ---------- Helpers ---------- */
+    function showMessage(message,type='info'){ const status=document.getElementById('formStatus'); status.textContent=message; status.style.color= type==='error'?'var(--neon-pink)':(type==='success'?'var(--neon-green)':'var(--muted)'); }
+
+    // Active nav highlight (scrollspy)
+    const sections=[...document.querySelectorAll('section[id]')]; const navLinks=[...document.querySelectorAll('.nav-links a')];
+    const byId=id=>document.querySelector(`.nav-links a[href="#${id}"]`);
+    const io=new IntersectionObserver(entries=>{ entries.forEach(e=>{ if(e.isIntersecting){ navLinks.forEach(a=>a.classList.remove('active')); const link=byId(e.target.id); if(link) link.classList.add('active'); } }) },{rootMargin:"-50% 0px -40% 0px", threshold:[0,1]});
+    sections.forEach(s=>io.observe(s));
+
+    // Theme toggle
+    const themeBtn=document.getElementById('themeBtn'); const current=localStorage.getItem('theme')||'dark';
+    document.documentElement.setAttribute('data-theme',current);
+    themeBtn.addEventListener('click',()=>{ const cur=document.documentElement.getAttribute('data-theme'); const next=cur==='dark'?'light':'dark'; document.documentElement.setAttribute('data-theme',next); localStorage.setItem('theme',next); });
+
+    // Filters
+    const filterBtns=document.querySelectorAll('[data-filter]'); const projectCards=document.querySelectorAll('.project');
+    filterBtns.forEach(btn=>btn.addEventListener('click',()=>{ const key=btn.getAttribute('data-filter'); filterBtns.forEach(b=>b.classList.remove('active')); btn.classList.add('active'); projectCards.forEach(card=>{ const tags=card.getAttribute('data-tags'); const show= key==='all' || (tags && tags.includes(key)); card.style.display= show? '' : 'none'; }); }))
+
+    // Print (save as PDF)
+    document.getElementById('printBtn').addEventListener('click',()=>window.print());
+
+    // Contact form (client-side only)
+    const form=document.getElementById('contactForm');
+    form.addEventListener('submit',(e)=>{ e.preventDefault(); const data=Object.fromEntries(new FormData(form).entries()); if(!data.name||!data.email||!data.message){ showMessage('ERROR: Missing required fields.','error'); return; } const subject=encodeURIComponent(data.subject||'Creative Inquiry'); const body=encodeURIComponent(`MESSAGE_RECEIVED >>\n\nFROM: ${data.name}\nEMAIL: ${data.email}\n\nMESSAGE: ${data.message}`); window.location.href=`mailto:you@example.com?subject=${subject}&body=${body}`; showMessage('TRANSMISSION_SUCCESSFUL.','success'); const btnRect=e.submitter.getBoundingClientRect(); emitBurst(btnRect.left+btnRect.width/2, btnRect.top+btnRect.height/2, 28); form.reset(); });
+
+    // Year
+    document.getElementById('year').textContent=new Date().getFullYear();
+
+    // Back to top button visibility
+    const backToTopBtn=document.getElementById('backToTopBtn');
+    window.addEventListener('scroll',()=>{ if(window.scrollY>300) backToTopBtn.classList.add('visible'); else backToTopBtn.classList.remove('visible'); });
+    backToTopBtn.addEventListener('click',()=>{ window.scrollTo({top:0,behavior:'smooth'}); });
+
+    // ----- Terminal functionality -----
+    const terminalToggleBtn=document.getElementById('toggleTerminalBtn');
+    const terminalContainer=document.getElementById('terminal');
+    const closeTerminalBtn=document.getElementById('closeTerminalBtn');
+    const terminalInput=document.getElementById('terminalInput');
+    const terminalOutput=document.getElementById('terminalOutput');
+    function appendToTerminal(text,color='var(--neon-green)'){ const line=document.createElement('span'); line.textContent=`> ${text}`; line.style.color=color; terminalOutput.appendChild(line); terminalOutput.appendChild(document.createElement('br')); terminalOutput.scrollTop=terminalOutput.scrollHeight; }
+    function setHelp(){
+      appendToTerminal('Available commands:');
+      appendToTerminal('  clear               // Clear console');
+      appendToTerminal('  echo [msg]          // Print a message');
+      appendToTerminal('  theme               // Toggle light/dark mode');
+      appendToTerminal('  matrix              // Toggle matrix rain');
+      appendToTerminal('  speed [s|n|f]       // Matrix speed (slow/normal/fast)');
+      appendToTerminal('  hash [on|off]       // Hex overlays + sweeps');
+      appendToTerminal('  tilt [on|off]       // 3D parallax tilt');
+      appendToTerminal('  accent [blue|pink|green] // Rain & dash color');
+      appendToTerminal('  trail [on|off]      // Cursor neon trail');
+      appendToTerminal('  sweep               // Trigger screen sweep');
+      appendToTerminal('  burst               // Neon burst at center');
+      appendToTerminal('  dashes [on|off|pulse|net] // Dashed effects & grid');
+      appendToTerminal('  cube [on|off|fast|slow]   // Logo cube control');
+      appendToTerminal('  root                // Toggle ROOT mode (easter egg)');
+    }
+    function processCommand(command){
+      const [cmd,arg]=command.split(/\s+/);
+      switch(cmd){
+        case 'help': setHelp(); break;
+        case 'clear': terminalOutput.innerHTML=''; break;
+        case 'echo': appendToTerminal(command.slice(5),'var(--neon-blue)'); break;
+        case 'theme': themeBtn.click(); appendToTerminal('Theme toggled.','var(--neon-pink)'); break;
+        case 'matrix': raining=!raining; if(raining) drawMatrix(); appendToTerminal('Matrix rain toggled.','var(--neon-pink)'); break;
+        case 'speed': { const v=(arg||'n')[0]; speed= v==='s'?0.6 : v==='f'?1.6 : 1.0; appendToTerminal(`Speed → ${v==='s'?'slow':v==='f'?'fast':'normal'}`,'var(--neon-blue)'); break; }
+        case 'hash': { const on=(arg||'on')==='on'; document.body.classList.toggle('hash-off', !on); appendToTerminal(`Hash overlays ${on?'enabled':'disabled'}.`,'var(--neon-blue)'); break; }
+        case 'tilt': { const on=(arg||'on')==='on'; document.body.classList.toggle('tilt-off', !on); appendToTerminal(`Tilt ${on?'enabled':'disabled'}.`,'var(--neon-blue)'); break; }
+        case 'accent': { const map={blue:'--neon-blue', pink:'--neon-pink', green:'--neon-green'}; const key=map[arg]||'--neon-blue'; document.documentElement.style.setProperty('--matrix', cssVar(key)); document.documentElement.style.setProperty('--dash', cssVar(key)); appendToTerminal(`Accent → ${arg||'blue'}`,'var(--neon-blue)'); break; }
+        case 'trail': { trailOn=(arg||'on')==='on'; appendToTerminal(`Trail ${trailOn?'enabled':'disabled'}.`,'var(--neon-blue)'); break; }
+        case 'sweep': { runSweep(); appendToTerminal('Sweep initiated.','var(--neon-pink)'); break; }
+        case 'burst': { emitBurst(innerWidth/2, innerHeight/2, 40); appendToTerminal('Burst!','var(--neon-pink)'); break; }
+        case 'dashes': {
+          const opt=(arg||'on');
+          if(opt==='on'||opt==='off'){ document.body.classList.toggle('dashes-off', opt==='off'); appendToTerminal(`Dashes ${opt==='off'?'disabled':'enabled'}.`,'var(--neon-blue)'); }
+          else if(opt==='pulse'){ document.body.classList.toggle('dash-pulse'); appendToTerminal('Dash pulse toggled.','var(--neon-blue)'); }
+          else if(opt==='net'){ document.getElementById('dashGrid').classList.toggle('on'); appendToTerminal('Dash grid toggled.','var(--neon-blue)'); }
+          else appendToTerminal('Usage: dashes [on|off|pulse|net]','var(--neon-pink)');
+          break;
+        }
+        case 'cube': { cubeCmd(arg); break; }
+        case 'root': document.body.classList.toggle('root'); asciiSkull(); appendToTerminal('ROOT MODE TOGGLED','var(--neon-pink)'); break;
+        default: appendToTerminal(`ERROR: Command not found: ${command}`, 'var(--neon-pink)');
+      }
+    }
+    document.getElementById('toggleTerminalBtn').addEventListener('click',()=>{ terminalContainer.classList.toggle('visible'); if(terminalContainer.classList.contains('visible')) terminalInput.focus(); });
+    document.getElementById('closeTerminalBtn').addEventListener('click',()=>{ terminalContainer.classList.remove('visible'); });
+    terminalInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ const command=terminalInput.value.trim().toLowerCase(); if(!command) return; appendToTerminal(`$ ${command}`); terminalInput.value=''; processCommand(command); }});
+
+    /* ----- Terminal Typo Animation (hero) ----- */
+    const characters="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{};:'\"\\|,.<>/?`~";
+    function getRandomChar(){ return characters.charAt(Math.floor(Math.random()*characters.length)); }
+    async function terminalTypoAnimation(elementId, delay=50){ const el=document.getElementById(elementId); const originalText=el.getAttribute('data-text-content'); if(!originalText) return; const container=document.createElement('span'); container.classList.add('terminal-text-container'); el.innerHTML=''; el.appendChild(container); container.classList.add('typing'); let typedText=''; for(let i=0;i<originalText.length;i++){ const isTypo=Math.random()<0.1; if(isTypo){ const typoChar=getRandomChar(); container.textContent=typedText+typoChar; await new Promise(r=>setTimeout(r, delay*2)); container.textContent=typedText; await new Promise(r=>setTimeout(r, delay)); } typedText+=originalText[i]; container.textContent=typedText; await new Promise(r=>setTimeout(r, delay)); } container.classList.remove('typing'); container.classList.add('typed'); }
+    window.addEventListener('load', async()=>{ await terminalTypoAnimation('heroHeadline',70); await new Promise(r=>setTimeout(r,500)); await terminalTypoAnimation('heroBioText',30); setHelp(); });
+
+    /* ====== HASH SCRAMBLE TEXT EFFECT ====== */
+    const HASH_CHARS = "#/\\%_+*$-=<>{}[]()01ABCDEF";
+    function scrambleTo(el, final, duration=600){ const start=performance.now(); const base=(el.dataset.text||el.textContent).split(''); function frame(now){ const p=Math.min(1,(now-start)/duration); const out=base.map((ch,i)=> ch===' ' ? ' ' : (Math.random()<p ? (final ? final[i]||ch : ch) : HASH_CHARS[Math.floor(Math.random()*HASH_CHARS.length)])).join(''); el.textContent=out; if(p<1) requestAnimationFrame(frame); else el.textContent= final || base.join(''); } requestAnimationFrame(frame); }
+    document.querySelectorAll('.hash-cycle').forEach(el=>{ el.dataset.text=el.dataset.text||el.textContent; el.addEventListener('mouseenter',()=>scrambleTo(el)); el.addEventListener('focus',()=>scrambleTo(el)); });
+
+    /* ====== RESPONSIVE HEX OVERLAY (projects) ====== */
+    function makeHexBlock(cols=16, rows=14){ const hex=()=>'0x'+Math.floor(Math.random()*256).toString(16).padStart(2,'0').toUpperCase(); let lines=[]; for(let r=0;r<rows;r++){ let row=[]; for(let c=0;c<cols;c++){ row.push(hex()); } lines.push(row.join(' ')); } return lines.join('\n'); }
+    function measureCell(layer){ const m=document.createElement('span'); m.textContent='0xFF '; m.style.visibility='hidden'; m.style.position='absolute'; layer.appendChild(m); const rect=m.getBoundingClientRect(); m.remove(); return {cellW:rect.width, lineH:rect.height}; }
+    function regenHexForThumb(thumb){ let layer=thumb.querySelector('.hashflow'); if(!layer){ layer=document.createElement('div'); layer.className='hashflow'; thumb.appendChild(layer); } const {cellW,lineH}=measureCell(layer); const cols=Math.max(6, Math.floor(thumb.clientWidth/cellW)-1); const rows=Math.max(6, Math.floor(thumb.clientHeight/lineH)-1); layer.textContent=makeHexBlock(cols,rows); }
+    const thumbs=[...document.querySelectorAll('.project .thumb')]; const ro=new ResizeObserver(entries=>{ for(const e of entries){ regenHexForThumb(e.target); } }); thumbs.forEach(t=>{ regenHexForThumb(t); ro.observe(t); });
+
+    /* ====== REVEAL ON SCROLL ====== */
+    const cardObs=new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); cardObs.unobserve(e.target);} }); },{threshold:.2});
+    document.querySelectorAll('.project').forEach(card=>cardObs.observe(card));
+
+    /* ====== PARALLAX TILT + MAGNETIC GLOW ====== */
+    let tiltEnabled=true; function attachTilt(el){ const glare=el.querySelector('.glare'); function move(e){ if(!tiltEnabled) return; const b=el.getBoundingClientRect(); const px=(e.clientX-b.left)/b.width; const py=(e.clientY-b.top)/b.height; const rx=(py-.5)*10; const ry=(.5-px)*10; el.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`; if(glare){ glare.style.opacity=.25; glare.style.background=`radial-gradient(closest-side at ${px*100}% ${py*100}%, rgba(255,255,255,.22), transparent 60%)`; } } function out(){ el.style.transform=''; if(glare) glare.style.opacity=0; } el.addEventListener('mousemove',move); el.addEventListener('mouseleave',out); }
+    document.querySelectorAll('.card.hash, .btn').forEach(attachTilt);
+
+    /* inject dashed ants overlays for existing .card.hash if missing */
+    document.querySelectorAll('.card.hash').forEach(c=>{ if(!c.querySelector('.dashants')){ const s=document.createElement('span'); s.className='dashants'; s.setAttribute('aria-hidden','true'); c.prepend(s); } });
+
+    /* ====== Button click ripple + burst ====== */
+    document.querySelectorAll('.btn').forEach(btn=>{ btn.addEventListener('click',(e)=>{ const r=document.createElement('span'); r.className='ripple'; const rect=btn.getBoundingClientRect(); r.style.left=e.clientX-rect.left+'px'; r.style.top=e.clientY-rect.top+'px'; btn.appendChild(r); r.addEventListener('animationend',()=>r.remove()); emitBurst(e.clientX,e.clientY,16); }); });
+
+    /* ====== KONAMI CODE → ROOT MODE + ASCII SKULL ====== */
+    const keys=[]; const KONAMI=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+    addEventListener('keydown',e=>{ keys.push(e.key); if(keys.slice(-10).join(',')===KONAMI.join(',')){ document.body.classList.toggle('root'); asciiSkull(); keys.length=0; }});
+    function asciiSkull(){ const art=`\n  .o88o.  o8o   .o8        .o8  \\\n  888 \"Y88.\n  888    888 ooo. .oo.  .o888oo  .ooooo.\n  888    888  \`888P\"Y88b   888   d88' \`88b\n  888    888   888   888   888   888ooo888\n  888   .88P   888   888   888 . 888    .o\n o888bood8P   o888o o888o  \"888\" \`Y8bod8P\n`; const o=document.createElement('pre'); o.textContent=art; o.style.cssText='position:fixed;inset:0;display:grid;place-items:center;z-index:250;color:var(--neon-pink);font:700 14px/1 VT323,monospace;background:rgba(0,0,0,.6)'; document.body.appendChild(o); setTimeout(()=>o.remove(),1400); }
+
+    /* ====== Random title jitter pulse every few seconds ====== */
+    function jitterTick(){ const titles=[...document.querySelectorAll('.title')]; if(!titles.length) return; const t=titles[Math.floor(Math.random()*titles.length)]; t.classList.add('glitch-jitter'); setTimeout(()=>t.classList.remove('glitch-jitter'),240); }
+    setInterval(()=>{ if(!document.hidden) jitterTick(); },7000);
+
+    /* ====== Screen sweep loop ====== */
+    const sweep=document.getElementById('sweepFx'); function runSweep(){ sweep.classList.remove('sweep-run'); void sweep.offsetWidth; sweep.classList.add('sweep-run'); }
+    setInterval(()=>{ if(!document.hidden) runSweep(); },8000);
+
+    /* ====== Console tips on load ====== */
+    function appendTip(){ appendToTerminal('TIP: try "cube fast", "accent pink", or "dashes net"'); }
+    setTimeout(appendTip,800);
+
+    /* ====== Reduced Motion: disable heavy FX ====== */
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches){ document.body.classList.add('tilt-off'); tiltEnabled=false; raining=false; trailOn=false; }
+
+    // Observe body class for tilt toggle
+    const observer=new MutationObserver(()=>{ tiltEnabled=!document.body.classList.contains('tilt-off'); }); observer.observe(document.body,{attributes:true,attributeFilter:['class']});
+
+    /* ====== Smoke tests (pre-merge) ====== */
+    function runSmokeTests(){
+      try{
+        console.assert(typeof processCommand==='function','processCommand() missing');
+        console.assert(document.querySelectorAll('.project').length>0,'No project cards found');
+        console.assert(document.querySelector('.logo-3d .cube'), 'Logo cube missing');
+      }catch(err){ console.error('Smoke tests failed',err); }
+    }
+    window.addEventListener('load', runSmokeTests);
+  // ===== Logo cube controls & interactions =====
+    const logoCube = document.querySelector('.logo-3d .cube');
+    function cubeCmd(arg){
+      if(!logoCube){ appendToTerminal('Cube not found','var(--neon-pink)'); return; }
+      const a=(arg||'on').toLowerCase();
+      if(a==='off'){ logoCube.style.animationPlayState='paused'; appendToTerminal('Cube paused.','var(--neon-blue)'); }
+      else if(a==='on'){ logoCube.style.animationPlayState='running'; appendToTerminal('Cube running.','var(--neon-blue)'); }
+      else if(a==='fast'){ logoCube.style.animationDuration='3s'; logoCube.style.animationPlayState='running'; appendToTerminal('Cube speed → fast','var(--neon-blue)'); }
+      else if(a==='slow'){ logoCube.style.animationDuration='12s'; logoCube.style.animationPlayState='running'; appendToTerminal('Cube speed → slow','var(--neon-blue)'); }
+      else{ appendToTerminal('Usage: cube [on|off|fast|slow]','var(--neon-pink)'); }
+    }
+    const brandEl = document.querySelector('.brand');
+    if(brandEl){ brandEl.addEventListener('click', (e)=>{ if(e.target.closest('.logo-3d')){ e.preventDefault(); const state=getComputedStyle(logoCube).animationPlayState; logoCube.style.animationPlayState= state==='running' ? 'paused' : 'running'; appendToTerminal(`Cube ${state==='running'?'paused':'resumed'}.`,'var(--neon-blue)'); } }); }
+</script>
+</body>
+</html>
